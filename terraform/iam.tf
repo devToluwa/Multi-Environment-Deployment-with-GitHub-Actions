@@ -22,10 +22,10 @@ resource "aws_iam_role" "github_actions" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Condition = {
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:devToluwa/Multi-Environment-Deployment-With-GitHub-Actions*"
+          "token.actions.githubusercontent.com:sub":"repo:${var.github_repo}:*"
         }
         StringEquals = {
-          "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          "token.actions.githubusercontent.com:aud":"sts.amazonaws.com"
         }
       }
     }]
