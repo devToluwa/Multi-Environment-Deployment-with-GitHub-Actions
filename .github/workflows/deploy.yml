@@ -20,9 +20,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: $${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
-
+      
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -30,10 +30,10 @@ jobs:
       - name: Download task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition multi-env-deploy-${{ inputs.environment }} \
-            --query taskDefinition \
-            > task-definition.json
-
+          --task-definition multi-env-deploy-${{ inputs.environment }} \
+          --query taskDefinition \
+          > task-definition.json
+      
       - name: Update ECS task definition with new image
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -41,15 +41,15 @@ jobs:
           task-definition: task-definition.json
           container-name: multi-env-deploy
           image: ${{ steps.login-ecr.outputs.registry }}/multi-env-deploy:${{ inputs.image_tag }}
-
+          
       - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        uses: aws-actions/amazon-ecs-deply-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: multi-env-deploy-${{ inputs.environment }}
           cluster: multi-env-deploy
           wait-for-service-stability: true
-
+      
       - name: Smoke test
         run: |
           echo "Waiting for service to stabilize..."
