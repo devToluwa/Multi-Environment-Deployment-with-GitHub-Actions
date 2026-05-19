@@ -61,12 +61,21 @@ resource "aws_iam_role_policy" "github_actions" {
           "ecs:RegisterTaskDefinition",
           "ecs:UpdateService",
           "ecs:DescribeServices",
-          "ecs:DescribeClusters"
+          "ecs:DescribeClusters",
+          "ecs:ListTasks",
+          "ecs:DescribeTasks"
         ]
         Resource = "*"
       },
       {
         Effect = "Allow"
+        Action = [
+          "ec2:DescribeNetworkInterfaces"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
         Action   = ["iam:PassRole"]
         Resource = aws_iam_role.ecs_task_execution.arn
       }
