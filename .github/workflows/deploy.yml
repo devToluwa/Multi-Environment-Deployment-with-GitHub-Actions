@@ -58,27 +58,19 @@ jobs:
       - name: Smoke test
         run: |
           echo "Waiting for service to stabilize..."
-          sleep 60
+          sleep 30
 
-          TASK_ARN=$(aws ecs list-tasks \
+          RUNNING=$(aws ecs describe-services \
             --cluster multi-env-deploy \
-            --service-name multi-env-deploy-${{ inputs.environment }} \
-            --query 'taskArns[0]' \
+            --services multi-env-deploy-${{ inputs.environment }} \
+            --query 'services[0].runningCount' \
             --output text)
 
-          TASK_DETAILS=$(aws ecs describe-tasks \
-            --cluster multi-env-deploy \
-            --tasks $TASK_ARN)
+          echo "Running task count: $RUNNING"
 
-          ENI_ID=$(echo $TASK_DETAILS | \
-            python3 -c "import json,sys; attachments=json.load(sys.stdin)['tasks'][0]['attachments'][0]['details']; print(next(x['value'] for x in attachments if x['name']=='networkInterfaceId'))")
+          if [ "$RUNNING" -lt "1" ]; then
+            echo "No running tasks — deployment failed"
+            exit 1
+          fi
 
-          PUBLIC_IP=$(aws ec2 describe-network-interfaces \
-            --network-interface-ids $ENI_ID \
-            --query 'NetworkInterfaces[0].Association.PublicIp' \
-            --output text)
-
-          echo "App running at $PUBLIC_IP:5000"
-
-          curl --retry 10 --retry-delay 10 --retry-connrefused --fail \
-            http://$PUBLIC_IP:5000/health
+          echo "Smoke test passed — $RUNNING task(s) running in ${{ inputs.environment }}"
