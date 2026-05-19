@@ -27,7 +27,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
-      
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -38,7 +38,7 @@ jobs:
           --task-definition multi-env-deploy-${{ inputs.environment }} \
           --query taskDefinition \
           > task-definition.json
-      
+
       - name: Update ECS task definition with new image
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -46,7 +46,7 @@ jobs:
           task-definition: task-definition.json
           container-name: multi-env-deploy
           image: ${{ steps.login-ecr.outputs.registry }}/multi-env-deploy:${{ inputs.image_tag }}
-          
+
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
@@ -54,11 +54,11 @@ jobs:
           service: multi-env-deploy-${{ inputs.environment }}
           cluster: multi-env-deploy
           wait-for-service-stability: false
-      
+
       - name: Smoke test
         run: |
           echo "Waiting for service to stabilize..."
-          sleep 30
+          sleep 60
 
           TASK_ARN=$(aws ecs list-tasks \
             --cluster multi-env-deploy \
@@ -80,5 +80,5 @@ jobs:
 
           echo "App running at $PUBLIC_IP:5000"
 
-          curl --retry 5 --retry-delay 5 --fail \
+          curl --retry 10 --retry-delay 10 --retry-connrefused --fail \
             http://$PUBLIC_IP:5000/health
