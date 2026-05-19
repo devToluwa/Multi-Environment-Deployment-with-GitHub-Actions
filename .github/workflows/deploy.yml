@@ -53,7 +53,7 @@ jobs:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: multi-env-deploy-${{ inputs.environment }}
           cluster: multi-env-deploy
-          wait-for-service-stability: true
+          wait-for-service-stability: false
       
       - name: Smoke test
         run: |
