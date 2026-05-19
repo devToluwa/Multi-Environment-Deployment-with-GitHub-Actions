@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      image_tag: ${{ steps.meta.outputs.tag }}
+      image_tag: ${{ github.sha }}
 
     steps:
       - name: Checkout code
@@ -29,10 +29,6 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Set image tag
-        id: meta
-        run: echo "tag=${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
         run: |
@@ -64,4 +60,4 @@ jobs:
     with:
       environment: prod
       image_tag: ${{ needs.build.outputs.image_tag }}
-    secrets: inherit  
+    secrets: inherit
