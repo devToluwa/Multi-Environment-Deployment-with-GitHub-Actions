@@ -62,7 +62,7 @@ jobs:
 
           RUNNING=$(aws ecs describe-services \
             --cluster multi-env-deploy \
-            --services multi-env-deploy-${{ inputs.environment }} \
+            --services multi-env-deploy-${{ inputs.environment }} \###
             --query 'services[0].runningCount' \
             --output text)
 
